@@ -40,6 +40,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install yarn
+        run: |
+          npm install -g corepack
+          cd server/
+          yarn set version 4.9.1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.9" # keep in sync with yt-dlp's python requirement
@@ -99,6 +104,11 @@ jobs:
       TIMEOUT: ${{ 7.5 }}
     steps:
       - uses: actions/checkout@v4
+      - name: Install yarn
+        run: |
+          npm install -g corepack
+          cd server/
+          yarn set version 4.9.1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.9" # keep in sync with yt-dlp's python requirement

@@ -49,7 +49,7 @@ docker run --name bgutil-provider -d -p 4416:4416 brainicism/bgutil-ytdlp-pot-pr
 git clone --single-branch --branch 0.8.2 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
 cd bgutil-ytdlp-pot-provider/server/
 yarn install --immutable
-yarn dlx tsc
+yarn tsc
 node build/main.js
 ```
 
@@ -82,7 +82,7 @@ cd ~
 git clone --single-branch --branch 0.8.2 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
 cd bgutil-ytdlp-pot-provider/server/
 yarn install --immutable
-yarn dlx tsc
+yarn tsc
 ```
 
 2. Make sure `node` is available in your `PATH`.

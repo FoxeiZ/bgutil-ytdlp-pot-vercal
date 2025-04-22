@@ -6,7 +6,7 @@ RUN yarn install --immutable
 
 COPY tsconfig.json ./
 COPY src/ src/
-RUN npx tsc
+RUN yarn tsc
 
 FROM node:20-slim
 WORKDIR /app

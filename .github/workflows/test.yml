@@ -52,7 +52,7 @@ jobs:
       - name: Download yt-dlp
         run: curl -L https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp -o yt-dlp && chmod +x ./yt-dlp
       - name: Install and build server dependencies
-        run: cd server/ && yarn install --frozen-lockfile && npx tsc
+        run: cd server/ && yarn install --immutable && yarn dlx tsc
       - name: Install plugin
         run: |
           mkdir -p ~/yt-dlp-plugins/bgutil-ytdlp-pot-provider/

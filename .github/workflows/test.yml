@@ -43,6 +43,7 @@ jobs:
       - name: Install yarn
         run: |
           npm install -g corepack
+          corepack enable
           cd server/
           yarn set version 4.9.1
       - uses: actions/setup-python@v5
@@ -107,6 +108,7 @@ jobs:
       - name: Install yarn
         run: |
           npm install -g corepack
+          corepack enable
           cd server/
           yarn set version 4.9.1
       - uses: actions/setup-python@v5

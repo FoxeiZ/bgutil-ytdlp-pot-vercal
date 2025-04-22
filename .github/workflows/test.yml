@@ -42,9 +42,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install yarn
         run: |
+          cd server/
           npm install -g corepack
           corepack enable
-          cd server/
           yarn set version 4.9.1
       - uses: actions/setup-python@v5
         with:
@@ -107,9 +107,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install yarn
         run: |
+          cd server/
           npm install -g corepack
           corepack enable
-          cd server/
           yarn set version 4.9.1
       - uses: actions/setup-python@v5
         with:

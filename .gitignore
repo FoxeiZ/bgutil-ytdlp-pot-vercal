@@ -1,6 +1,14 @@
 server/build/
 server/node_modules/
 server/tsconfig.tsbuildinfo
+server/.yarn/*
+server/!.yarn/cache
+server/!.yarn/patches
+server/!.yarn/plugins
+server/!.yarn/releases
+server/!.yarn/sdks
+server/!.yarn/versions
+server/.pnp.*
 
 plugin/dist/
 plugin/__pycache__/

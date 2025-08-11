@@ -234,76 +234,97 @@ export class SessionManager {
         return this._minterCache;
     }
 
+    private async getDescrambledChallengeViaAttGet(
+        bgConfig: BgConfig,
+        innertubeContext?: InnertubeContext,
+        challenge?: ChallengeData,
+    ): Promise<DescrambledChallenge> {
+        this.logger.debug("Generating challenge via /att/get endpoint");
+        if (!innertubeContext) throw new Error("Innertube context unavailable");
+        if (!challenge) {
+            const attGetResponse = await bgConfig.fetch(
+                "https://www.youtube.com/youtubei/v1/att/get?prettyPrint=false",
+                {
+                    method: "POST",
+                    headers: {
+                        ...getHeaders(),
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        context: innertubeContext,
+                        engagementType: "ENGAGEMENT_TYPE_UNBOUND",
+                    }),
+                },
+            );
+            const attestation = await attGetResponse.json();
+            if (!attestation)
+                throw new Error("Failed to get challenge from /att/get");
+            challenge = attestation.bgChallenge as ChallengeData;
+        } else {
+            this.logger.debug("Using challenge from the webpage");
+        }
+        const { program, globalName, interpreterHash } = challenge;
+        const { privateDoNotAccessOrElseTrustedResourceUrlWrappedValue } =
+            challenge.interpreterUrl;
+        const interpreterJSResponse = await bgConfig.fetch(
+            `https:${privateDoNotAccessOrElseTrustedResourceUrlWrappedValue}`,
+        );
+        const interpreterJS = await interpreterJSResponse.text();
+        return {
+            program,
+            globalName,
+            interpreterHash,
+            interpreterJavascript: {
+                privateDoNotAccessOrElseSafeScriptWrappedValue: interpreterJS,
+                privateDoNotAccessOrElseTrustedResourceUrlWrappedValue,
+            },
+        };
+    }
+
+    private async getDescrambledChallengeViaCreate(
+        bgConfig: BgConfig,
+    ): Promise<DescrambledChallenge> {
+        this.logger.debug("Generatng challenge via /Create endpoint");
+        try {
+            const descrambledChallenge = await BG.Challenge.create(bgConfig);
+            if (descrambledChallenge) return descrambledChallenge;
+        } catch (e) {
+            throw new Error(
+                `Error while attempting to retrieve BG challenge.`,
+                { cause: e },
+            );
+        }
+        throw new Error("Could not get Botguard challenge");
+    }
+
     private async getDescrambledChallenge(
         bgConfig: BgConfig,
         challenge?: ChallengeData,
         innertubeContext?: InnertubeContext,
         disableInnertube?: boolean,
     ): Promise<DescrambledChallenge> {
-        try {
-            if (disableInnertube) throw null;
-            if (!challenge) {
-                if (!innertubeContext)
-                    throw new Error("Innertube context unavailable");
-                this.logger.debug("Using challenge from /att/get");
-                const attGetResponse = await bgConfig.fetch(
-                    "https://www.youtube.com/youtubei/v1/att/get?prettyPrint=false",
-                    {
-                        method: "POST",
-                        headers: {
-                            ...getHeaders(),
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            context: innertubeContext,
-                            engagementType: "ENGAGEMENT_TYPE_UNBOUND",
-                        }),
-                    },
-                );
-                const attestation = await attGetResponse.json();
-                if (!attestation)
-                    throw new Error("Failed to get challenge from /att/get");
-                challenge = attestation.bgChallenge as ChallengeData;
-            } else {
-                this.logger.debug("Using challenge from the webpage");
-            }
-            const { program, globalName, interpreterHash } = challenge;
-            const { privateDoNotAccessOrElseTrustedResourceUrlWrappedValue } =
-                challenge.interpreterUrl;
-            const interpreterJSResponse = await bgConfig.fetch(
-                `https:${privateDoNotAccessOrElseTrustedResourceUrlWrappedValue}`,
-            );
-            const interpreterJS = await interpreterJSResponse.text();
-            return {
-                program,
-                globalName,
-                interpreterHash,
-                interpreterJavascript: {
-                    privateDoNotAccessOrElseSafeScriptWrappedValue:
-                        interpreterJS,
-                    privateDoNotAccessOrElseTrustedResourceUrlWrappedValue,
-                },
-            };
-        } catch (e) {
-            if (e === null)
-                this.logger.debug(
-                    "Using the /Create endpoint as innertube challenges are disabled",
-                );
-            else
-                this.logger.warn(
-                    `Failed to get descrambled challenge from Innertube, trying the /Create endpoint. (caused by ${strerror(e)})`,
-                );
+        if (disableInnertube) {
             try {
-                const descrambledChallenge =
-                    await BG.Challenge.create(bgConfig);
-                if (descrambledChallenge) return descrambledChallenge;
-            } catch (eInner) {
-                throw new Error(
-                    `Error while attempting to retrieve BG challenge.`,
-                    { cause: eInner },
+                return await this.getDescrambledChallengeViaCreate(bgConfig);
+            } catch (e) {
+                this.logger.error(
+                    `Failed to get descrambled challenge via /Create: ${strerror(e)}`,
                 );
+                throw e;
             }
-            throw new Error("Could not get Botguard challenge");
+        }
+
+        try {
+            return await this.getDescrambledChallengeViaAttGet(
+                bgConfig,
+                innertubeContext,
+                challenge,
+            );
+        } catch (e) {
+            this.logger.error(
+                `Failed to get descrambled challenge via /att/get: ${strerror(e)}`,
+            );
+            throw e;
         }
     }
 
@@ -482,6 +503,7 @@ export class SessionManager {
         challenge: ChallengeData | undefined = undefined,
         disableInnertube: boolean = false,
         innertubeContext?: InnertubeContext,
+        isRetry = false,
     ): Promise<YoutubeSessionData> {
         if (!contentBinding) {
             this.logger.warn(
@@ -520,6 +542,7 @@ export class SessionManager {
             requestKey: SessionManager.REQUEST_KEY,
         };
 
+        let tokenMinter;
         if (!bypassCache) {
             if (this.youtubeSessionDataCaches) {
                 const sessionData =
@@ -531,30 +554,53 @@ export class SessionManager {
                     return sessionData;
                 }
             }
-            let tokenMinter = this._minterCache.get(cacheSpec.key);
+            tokenMinter = this._minterCache.get(cacheSpec.key);
             if (tokenMinter) {
                 // Replace minter if expired
                 if (new Date() >= tokenMinter.expiry) {
                     this.logger.log("POT minter expired, getting a new one");
-                    tokenMinter = await this.generateTokenMinter(
-                        cacheSpec,
-                        bgConfig,
-                        challenge,
-                        innertubeContext,
-                        disableInnertube,
-                    );
+                    this._minterCache.delete(cacheSpec.key);
+                    tokenMinter = undefined;
                 }
-                return await this.tryMintPOT(contentBinding, tokenMinter);
             }
         }
 
-        const tokenMinter = await this.generateTokenMinter(
-            cacheSpec,
-            bgConfig,
-            challenge,
-            innertubeContext,
-            disableInnertube,
-        );
+        if (!tokenMinter) {
+            try {
+                tokenMinter = await this.generateTokenMinter(
+                    cacheSpec,
+                    bgConfig,
+                    challenge,
+                    innertubeContext,
+                    disableInnertube,
+                );
+            } catch (e) {
+                if (isRetry) {
+                    this.logger.error(
+                        `Failed to generate token minter on retry: ${strerror(e)}`,
+                    );
+                    throw e;
+                }
+
+                this.logger.warn(
+                    `Failed to generate token minter, retrying with disableInnertube = ${!disableInnertube}: ${strerror(e)}`,
+                );
+
+                // retry with alternate method
+                return this.generatePoToken(
+                    contentBinding,
+                    proxy,
+                    bypassCache,
+                    sourceAddress,
+                    disableTlsVerification,
+                    challenge,
+                    !disableInnertube,
+                    innertubeContext,
+                    true,
+                );
+            }
+        }
+
         return await this.tryMintPOT(contentBinding, tokenMinter);
     }
 }

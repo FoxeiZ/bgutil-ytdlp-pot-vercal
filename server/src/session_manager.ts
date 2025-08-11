@@ -583,7 +583,7 @@ export class SessionManager {
                 }
 
                 this.logger.warn(
-                    `Failed to generate token minter, retrying with disableInnertube = ${!disableInnertube}. If this is consistently happening, consider setting the 'disable_innertube' extractor argument. err = ${strerror(e)}`,
+                    `Failed to generate token minter, retrying with disableInnertube = ${!disableInnertube}. If this is consistently happening, consider toggling the 'disable_innertube' extractor argument. err = ${strerror(e)}`,
                 );
 
                 // retry with alternate method

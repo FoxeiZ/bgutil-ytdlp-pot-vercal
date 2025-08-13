@@ -43,9 +43,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        player_client: [web, web_music, mweb]
+        - player_client: web_music
+          video_id: He322O1JWgU
+        - player_client: mweb
+          video_id: 9bZkp7q19f0
     env:
       PLAYER_CLIENT: ${{ matrix.player_client }}
+      VIDEO_ID: ${{ matrix.video_id }}
       TEST_ARGS: >-
         -vF --color always
         --extractor-args "youtube:player-client=${{ matrix.player_client }};pot_trace=true;fetch_pot=always"
@@ -86,7 +90,7 @@ jobs:
 
           # expect this to fail, but just make sure that the plugin is invoked
           {
-            script_response=$(./yt-dlp ${{ env.TEST_ARGS }} --extractor-args "youtubepot-bgutilscript:script_path=server/build/generate_once.js" dQw4w9WgXcQ 2>&1)
+            script_response=$(./yt-dlp ${{ env.TEST_ARGS }} --extractor-args "youtubepot-bgutilscript:script_path=server/build/generate_once.js" ${{ env.VIDEO_ID }} 2>&1)
             ret=$?
           } || true
 
@@ -119,12 +123,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        player_client: [web, web_music, mweb]
+        - player_client: web_music
+          video_id: He322O1JWgU
+        - player_client: mweb
+          video_id: 9bZkp7q19f0
     env:
       PORT: 4426
       INTERVAL: 0.5
       TIMEOUT: 7.5
       PLAYER_CLIENT: ${{ matrix.player_client }}
+      VIDEO_ID: ${{ matrix.video_id }}
       TEST_ARGS: >-
         -vF --color always
         --extractor-args "youtube:player-client=${{ matrix.player_client }};pot_trace=true;fetch_pot=always"
@@ -193,7 +201,7 @@ jobs:
 
           # expect this to fail, but just make sure that the plugin is invoked
           {
-            server_response=$(./yt-dlp ${{ env.TEST_ARGS }} --extractor-args "youtubepot-bgutilhttp:base_url=http://127.0.0.1:${{ env.PORT }}" dQw4w9WgXcQ 2>&1)
+            server_response=$(./yt-dlp ${{ env.TEST_ARGS }} --extractor-args "youtubepot-bgutilhttp:base_url=http://127.0.0.1:${{ env.PORT }}" ${{ env.VIDEO_ID }} 2>&1)
             ret=$?
           } || true
 

@@ -43,10 +43,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        - player_client: web_music
-          video_id: He322O1JWgU
-        - player_client: mweb
-          video_id: 9bZkp7q19f0
+        include:
+          - player_client: web_music
+            video_id: He322O1JWgU
+          - player_client: mweb
+            video_id: 9bZkp7q19f0
     env:
       PLAYER_CLIENT: ${{ matrix.player_client }}
       VIDEO_ID: ${{ matrix.video_id }}
@@ -123,10 +124,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        - player_client: web_music
-          video_id: He322O1JWgU
-        - player_client: mweb
-          video_id: 9bZkp7q19f0
+        include:
+          - player_client: web_music
+            video_id: He322O1JWgU
+          - player_client: mweb
+            video_id: 9bZkp7q19f0
     env:
       PORT: 4426
       INTERVAL: 0.5

@@ -14,6 +14,7 @@ import { ProxyAgent } from "proxy-agent";
 import { JSDOM } from "jsdom";
 import { Innertube, Context as InnertubeContext } from "youtubei.js";
 import { strerror } from "./utils.js";
+import { writeFileSync } from "fs";
 
 interface YoutubeSessionData {
     poToken: string;
@@ -156,7 +157,8 @@ export type ChallengeData = {
 
 export class SessionManager {
     // hardcoded API key that has been used by youtube for years
-    private static readonly REQUEST_KEY = "O43z0dpjhgX20SCx4KAo";
+    // private static readonly REQUEST_KEY = "O43z0dpjhgX20SCx4KAo";
+    private static readonly REQUEST_KEY = "HVXUKVy98PAjvWs7DkU0";
     private static hasDom = false;
     private _minterCache: MinterCache = new Map();
     private TOKEN_TTL_HOURS: number;
@@ -175,8 +177,8 @@ export class SessionManager {
             const dom = new JSDOM(
                 '<!DOCTYPE html><html lang="en"><head><title></title></head><body></body></html>',
                 {
-                    url: "https://www.youtube.com/",
-                    referrer: "https://www.youtube.com/",
+                    url: "https://www.music.youtube.com/",
+                    referrer: "https://www.music.youtube.com/",
                     userAgent: USER_AGENT,
                 },
             );
@@ -254,8 +256,49 @@ export class SessionManager {
                 if (!innertubeContext)
                     throw new Error("Innertube context unavailable");
                 this.logger.debug("Using challenge from /att/get");
+                const configInfo = innertubeContext.client.configInfo;
+                if (configInfo) {
+                    (configInfo as any).coldConfigData = null;
+                    (configInfo as any).hotHashData = null;
+                    (configInfo as any).coldHashData = null;
+                }
+                innertubeContext.client.screenWidthPoints = 1210;
+                innertubeContext.client.screenHeightPoints = 996;
+                innertubeContext.client.screenPixelDensity = 1;
+                innertubeContext.client.screenDensityFloat = 1.25;
+                innertubeContext.client.userInterfaceTheme =
+                    "USER_INTERFACE_THEME_DARK";
+                (innertubeContext.client as any).musicAppInfo = {
+                    pwaInstallabilityStatus:
+                        "PWA_INSTALLABILITY_STATUS_UNKNOWN",
+                    webDisplayMode: "WEB_DISPLAY_MODE_BROWSER",
+                    storeDigitalGoodsApiSupportStatus: {
+                        playStoreDigitalGoodsApiSupportStatus:
+                            "DIGITAL_GOODS_API_SUPPORT_STATUS_UNSUPPORTED",
+                    },
+                };
+
+                (innertubeContext.client as any).acceptHeader =
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
+
+                const request = innertubeContext.request;
+                if (request) {
+                    request.internalExperimentFlags = [];
+                    (request as any).consistencyTokenJars = [];
+                }
+
+                writeFileSync(
+                    `innertube_context-${Date.now()}.json`,
+                    JSON.stringify({
+                        context: innertubeContext,
+                        headers: getHeaders(),
+                    }),
+                );
+
+                // process.exit(1);
+
                 const attGetResponse = await bgConfig.fetch(
-                    "https://www.youtube.com/youtubei/v1/att/get?prettyPrint=false",
+                    "https://music.youtube.com/youtubei/v1/att/get?prettyPrint=false",
                     {
                         method: "POST",
                         headers: {

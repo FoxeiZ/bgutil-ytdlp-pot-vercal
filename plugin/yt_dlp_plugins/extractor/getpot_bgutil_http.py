@@ -88,7 +88,8 @@ class BgUtilHTTPPTP(BgUtilPTPBase):
                 f'Unknown error reaching GET /ping (caused by {e!r})', raise_from=e)
             return
         else:
-            self._check_version(response.get('version', ''), name='HTTP server')
+            self._check_version(response.get(
+                'version', ''), name='HTTP server')
             self._server_available = True
             return True
         finally:
@@ -108,8 +109,10 @@ class BgUtilHTTPPTP(BgUtilPTPBase):
         # used for CI check
         self.logger.trace('Generating POT via HTTP server')
 
-        disable_innertube = bool(self._configuration_arg('disable_innertube', default=[None])[0])
-        challenge = self._get_attestation(None if disable_innertube else request.video_webpage)
+        disable_innertube = bool(self._configuration_arg(
+            'disable_innertube', default=[None])[0])
+        challenge = self._get_attestation(
+            None if disable_innertube else request.video_webpage)
         # The challenge is falsy when the webpage and the challenge are unavailable
         # In this case, we need to disable /att/get since it's broken for web_music
         if not challenge and request.internal_client_name == 'web_music':

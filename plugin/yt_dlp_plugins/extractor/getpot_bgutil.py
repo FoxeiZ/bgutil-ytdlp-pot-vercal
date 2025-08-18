@@ -58,8 +58,8 @@ class BgUtilPTPBase(PoTokenProvider, abc.ABC):
                 f'Please ensure they are on the same version. '
                 f'Otherwise, help will NOT be provided for any issues that arise. '
                 f'(plugin: {self.PROVIDER_VERSION}, {name}: {got_version or default})',
-                once=True,
-            )
+                once=True)
+
         if not got_version or _major(got_version) != _major(self.PROVIDER_VERSION):
             self._warn_and_raise(
                 f'Plugin and {name} major versions are mismatched. '

@@ -63,8 +63,7 @@ class BgUtilPTPBase(PoTokenProvider, abc.ABC):
         if not got_version or _major(got_version) != _major(self.PROVIDER_VERSION):
             self._warn_and_raise(
                 f'Plugin and {name} major versions are mismatched. '
-                f'Update both the plugin and the {name} to the same version to proceed.',
-            )
+                f'Update both the plugin and the {name} to the same version to proceed.')
 
     def _get_attestation(self, webpage: str | None):
         if not webpage:

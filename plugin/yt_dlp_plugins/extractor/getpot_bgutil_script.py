@@ -59,7 +59,8 @@ class BgUtilScriptPTP(BgUtilPTPBase):
     def _node_path(self):
         node_path = shutil.which('node')
         if node_path is None:
-            self.logger.trace('node is not in PATH')
+            raise PoTokenProviderError(
+                'Node.js executable not found. Please ensure Node.js is installed and available in PATH.')
         vsn = self._check_node_version(node_path)
         if vsn:
             self.logger.trace(f'Node version: {vsn}')

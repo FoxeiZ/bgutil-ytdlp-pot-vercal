@@ -4,6 +4,7 @@
         "outDir": "./build",
         "allowJs": true,
         "target": "es2022",
+        "module": "esnext",
         "moduleResolution": "node",
         "baseUrl": ".",
         "rootDir": ".",
@@ -18,5 +19,14 @@
         "sourceMap": true,
         "skipLibCheck": true,
         "noUncheckedIndexedAccess": true,
+        "paths": {
+            "src/*": [
+                "src/*"
+            ]
+        }
     },
+    "include": [
+        "src/**/*",
+        "api/**/*"
+    ]
 }

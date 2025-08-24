@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { strerror } from "../src/utils";
-import { SessionManager } from "../src/session_manager";
+import { strerror } from "../src/utils.js";
+import { SessionManager } from "../src/session_manager.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = req.body || {};

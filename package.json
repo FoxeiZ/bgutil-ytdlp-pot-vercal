@@ -2,7 +2,6 @@
     "name": "bgutil-ytdlp-pot-provider",
     "description": "Proof-of-origin token provider and plugin for yt-dlp, using bgutils",
     "license": "GPL-3.0-only",
-    "type": "module",
     "contributors": [
         {
             "name": "Brainicism",
@@ -30,6 +29,7 @@
         "youtubei.js": "^15.0.1"
     },
     "devDependencies": {
+        "@vercel/node": "^2.9.6",
         "@commander-js/extra-typings": "^14.0.0",
         "@eslint/js": "^9.32.0",
         "@types/body-parser": "^1.19.6",

@@ -13,7 +13,7 @@ import { Agent } from "https";
 import { ProxyAgent } from "proxy-agent";
 import { JSDOM } from "jsdom";
 import { Innertube, Context as InnertubeContext } from "youtubei.js";
-import { strerror } from "./utils.js";
+import { strerror } from "./utils";
 
 interface YoutubeSessionData {
     poToken: string;
@@ -40,7 +40,7 @@ class Logger {
                 console.log(msg);
             };
         } else {
-            this.debug = this.log = () => {};
+            this.debug = this.log = () => { };
         }
         this.warn = (msg: string) => {
             console.warn(msg);
@@ -128,7 +128,7 @@ class CacheSpec {
     constructor(
         public pxySpec: ProxySpec,
         public ip: string | null,
-    ) {}
+    ) { }
     public get key(): string {
         return JSON.stringify(
             this.ip || [this.pxySpec.proxy, this.pxySpec.sourceAddress],

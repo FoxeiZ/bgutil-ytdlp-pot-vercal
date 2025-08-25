@@ -1,11 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { createClient } from 'redis';
+import { Redis } from "@upstash/redis"
 import { strerror } from "../src/utils.js";
 import { SessionManager, YoutubeSessionDataCaches } from "../src/session_manager.js";
 
 
-const redisUrl = process.env.REDIS_URL;
-const redis = await createClient({ url: redisUrl }).connect();
+const redis = new Redis({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = req.body || {};
@@ -20,9 +22,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const cache: YoutubeSessionDataCaches = {};
 
-    const cacheData = await redis.get('youtube_session_data');
+    const cacheData = await redis.get<object>('youtube_session_data');
     if (cacheData) {
-        const parsedData = JSON.parse(cacheData) as YoutubeSessionDataCaches;
+        const parsedData = cacheData as YoutubeSessionDataCaches;
         for (const contentBinding in parsedData) {
             const parsedCache = parsedData[contentBinding];
             if (parsedCache) {

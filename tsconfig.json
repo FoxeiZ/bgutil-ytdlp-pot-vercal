@@ -20,6 +20,9 @@
         "skipLibCheck": true,
         "noUncheckedIndexedAccess": true,
         "paths": {
+            "api/*": [
+                "api/*"
+            ],
             "src/*": [
                 "src/*"
             ]

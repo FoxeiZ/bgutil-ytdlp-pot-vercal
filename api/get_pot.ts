@@ -1,13 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { Redis } from "@upstash/redis"
 import { strerror } from "../src/utils.js";
-import { SessionManager, YoutubeSessionDataCaches } from "../src/session_manager.js";
+import initSession from "../src/init_session.js";
 
-
-const redis = new Redis({
-    url: process.env.KV_REST_API_URL,
-    token: process.env.KV_REST_API_TOKEN,
-});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = req.body || {};
@@ -19,28 +13,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).send({
             error: "visitor_data is deprecated, use content_binding instead",
         });
+    if (body.disable_innertube)
+        return res.status(400).send({
+            error: "disable_innertube is deprecated because the /Create endpoint doesn't work anymore",
+        });
 
-    const cache: YoutubeSessionDataCaches = {};
-
-    const cacheData = await redis.get<object>('youtube_session_data');
-    if (cacheData) {
-        const parsedData = cacheData as YoutubeSessionDataCaches;
-        for (const contentBinding in parsedData) {
-            const parsedCache = parsedData[contentBinding];
-            if (parsedCache) {
-                const expiresAt = new Date(parsedCache.expiresAt);
-                if (!isNaN(expiresAt.getTime())) {
-                    cache[contentBinding] = {
-                        poToken: parsedCache.poToken,
-                        expiresAt,
-                        contentBinding: contentBinding,
-                    }
-                };
-            }
-        }
-    }
-
-    const sessionManager = new SessionManager(false, cache || {});
+    const { redis, sessionManager } = await initSession();
 
     const contentBinding: string | undefined = body.content_binding;
     const proxy: string = body.proxy;
@@ -57,14 +35,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             sourceAddress,
             disableTlsVerification,
             body.challenge,
-            body.disable_innertube || false,
             body.innertube_context,
         );
 
+        const cache = sessionManager.getYoutubeSessionDataCaches();
         await redis.set('youtube_session_data', JSON.stringify(cache));
 
         res.send(sessionData);
-    } catch (e) {
+    } catch (e: any) {
         const msg = strerror(e, /*update=*/ true);
         console.error(e.stack);
         res.status(500).send({ error: msg });

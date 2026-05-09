@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "ignoreDeprecations": "6.0",
         "incremental": true,
         "outDir": "./build",
         "allowJs": true,
@@ -21,8 +22,12 @@
         "noUncheckedIndexedAccess": true,
         "rewriteRelativeImportExtensions": true,
         "paths": {
-            "commander": ["./types/commander.d.ts"]
+            "commander": [
+                "./types/commander.d.ts"
+            ]
         }
     },
-    "include": ["./src/**/*"]
+    "include": [
+        "./src/**/*"
+    ]
 }

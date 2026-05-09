@@ -25,3 +25,5 @@ yt-dlp/
 
 /tmp/
 cache.json
+.vercel
+.env*.local

@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis"
-import { SessionManager, YoutubeSessionDataCaches } from "./session_manager";
+import { SessionManager, YoutubeSessionDataCaches } from "./session_manager.ts";
 
 export default async function initSession() {
     const redis = new Redis({

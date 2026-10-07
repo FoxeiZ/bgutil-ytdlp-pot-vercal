@@ -1,15 +1,13 @@
 {
     "type": "module",
     "compilerOptions": {
-        "ignoreDeprecations": "6.0",
         "incremental": true,
         "outDir": "./build",
         "allowJs": true,
-        "target": "es2022",
-        "module": "esnext",
-        "moduleResolution": "node",
-        "baseUrl": ".",
-        "rootDir": "src",
+        "target": "es2023",
+        "module": "node20",
+        "moduleResolution": "node16",
+        "rootDir": ".",
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
         "strictNullChecks": true,
@@ -22,15 +20,16 @@
         "skipLibCheck": true,
         "noUncheckedIndexedAccess": true,
         "rewriteRelativeImportExtensions": true,
+        "useUnknownInCatchVariables": false,
         "paths": {
             "commander": [
                 "./types/commander.d.ts"
             ],
             "api/*": [
-                "api/*"
+                "./api/*"
             ],
             "src/*": [
-                "src/*"
+                "./src/*"
             ]
         }
     },

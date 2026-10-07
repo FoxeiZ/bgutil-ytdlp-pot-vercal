@@ -27,3 +27,6 @@ yt-dlp/
 cache.json
 .vercel
 .env*.local
+
+# README copied into plugin/ during release builds
+plugin/README.md

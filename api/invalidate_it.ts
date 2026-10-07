@@ -6,5 +6,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sessionManager.invalidateIT();
     const cache = sessionManager.getYoutubeSessionDataCaches();
     await redis.set('youtube_session_data', JSON.stringify(cache));
-    res.send({ success: true });
+    res.status(204).send(null);
 }
